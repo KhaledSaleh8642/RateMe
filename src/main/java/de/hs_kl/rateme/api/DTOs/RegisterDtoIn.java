@@ -6,5 +6,5 @@ public record RegisterDtoIn(String username, String email,
                             String street,
                             String streetNr,
                             String zip,
-                            String city) {
+                            String city,byte[] password_hash) {
 }
