@@ -9,10 +9,10 @@ import java.util.Objects;
 @Table(name = "rating")
 @NamedQueries(
         {
-                @NamedQuery(name = "getAllRatings",
-                query = "SELECT r FROM Rating r"),
-    @NamedQuery(name = "findRatingsByPoiId",
-    query = "SELECT r FROM Rating r WHERE r.poi.id= :poiId"),
+        @NamedQuery(name = "getAllRatings",
+        query = "SELECT r FROM Rating r"),
+        @NamedQuery(name = "findRatingsByPoiId",
+        query = "SELECT r FROM Rating r WHERE r.poi.id= :poiId"),
         @NamedQuery(name = "findRatingByUserId",
         query = "SELECT r FROM Rating r WHERE r.user.id = :userId"),
 

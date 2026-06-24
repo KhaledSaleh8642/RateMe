@@ -7,6 +7,7 @@ import de.hs_kl.rateme.entity.User;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 
@@ -25,7 +26,11 @@ public class DBAccess {
             , String firstname,String lastname
     ,String street,String street_nr,String zip, String city){
     User user = new User();
-    user.setUsername(username);
+    if(findUserByUsername(username) != null){
+    throw new IllegalArgumentException(HttpStatus.FORBIDDEN + "User already exists");
+    }
+
+
     byte[] salt = PasswordTools.generateSalt();
     byte[] hash = PasswordTools.generatePasswordHash(password,salt);
     user.setPasswordSalt(salt);
@@ -51,9 +56,6 @@ public class DBAccess {
             .setParameter("username", username)
             .getSingleResult();
  }
- public Collection<User> getAllUsers(){
-    return entityManager.createNamedQuery( "getAllUsers", User.class).getResultList();
- }
     //============Poi============
     public Collection<Poi> getAllPois(){
         return entityManager.createNamedQuery("getAllPois", Poi.class).getResultList();
@@ -78,6 +80,9 @@ public class DBAccess {
     public Rating createRating(int userId , long poiId, int grade, String txt, Integer image_id){
         Rating rating = new Rating();
 
+        if (grade < 0 || grade > 5) {
+            throw new IllegalArgumentException("Grade must be between 0 and 5");
+        }
         User user = findUserById(userId);
         Poi poi = getPoiById(poiId);
         Image image = (image_id != null) ? findImgById(image_id) : null;
@@ -94,9 +99,6 @@ public class DBAccess {
 
         return rating;
 
-    }
-    public Collection<Rating> getAllRatings(){
-        return entityManager.createNamedQuery("getAllRatings",Rating.class).getResultList();
     }
     public Collection<Rating> findRatingsByPoiId(long poiId){
         return entityManager

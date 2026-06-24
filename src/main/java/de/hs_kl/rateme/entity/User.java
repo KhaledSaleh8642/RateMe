@@ -1,6 +1,7 @@
 package de.hs_kl.rateme.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,8 +16,6 @@ import java.util.Objects;
                 @NamedQuery(name = "findUserByUsername",
                         query = "SELECT u FROM User u WHERE u.username = :username")
         ,
-                @NamedQuery(name = "getAllUsers",
-                query = "SELECT u FROM User u")
 
         }
 )
@@ -28,6 +27,7 @@ private int id;
     @Column(unique = true,length = 20,nullable = false)
 private String username;
     @Column(nullable = false, length = 50)
+    @NotBlank(message = "Email is required")
 private String email;
 
     @Column(nullable = false, length = 20)

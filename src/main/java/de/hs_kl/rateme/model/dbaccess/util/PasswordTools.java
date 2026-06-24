@@ -29,7 +29,6 @@ public class PasswordTools
         } catch (Exception exception) {
             throw new RuntimeException(exception);
         }
-
     }
 
     public static byte[] generateSalt()

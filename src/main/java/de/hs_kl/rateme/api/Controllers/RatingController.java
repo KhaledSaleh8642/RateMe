@@ -37,9 +37,11 @@ public class RatingController {
     public ResponseEntity<RatingDtoOut> rate(@RequestBody RatingDtoIn dtoIn, @RequestHeader("Authorization") String token) {
 
         securityManager.checkIfTokenIsAccepted(token);
+        if (dtoIn.grade() < 0 || dtoIn.grade() > 5) {
+            return ResponseEntity.badRequest().build();
+        }
+
         Rating rating = dbAccess.createRating(securityManager.getUser(token).getId(), dtoIn.poiId(),dtoIn.grade(),dtoIn.txt(), dtoIn.imageId());
-
-
 
         return ResponseEntity.ok(toDtoOut(rating));
 

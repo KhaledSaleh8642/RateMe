@@ -4,3 +4,19 @@ GET https://examples.http-client.intellij.net/get
 
 ###
 GET localhost:8080/api/pois
+Authorization: ac458bf8-3b5d-47fa-a731-89cca4d856d2
+###
+POST http://localhost:8080/api/users/register
+Content-Type: application/json
+
+{
+  "username": "khaled",
+  "password": "123112s",
+  "email": "m@hs-kl.de",
+  "firstname": "Khaled",
+  "lastname": "Saleh",
+  "street": "Hauptstraße",
+  "streetNr": "1",
+  "zip": "66482",
+  "city": "Zweibrücken"
+}
