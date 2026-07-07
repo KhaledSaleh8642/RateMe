@@ -34,6 +34,20 @@ public class UserController {
                 dtoIn.zip(),
                 dtoIn.city());
 
+
+        if      ( dtoIn.username() == null || dtoIn.username().isBlank()
+                ||dtoIn.password() == null || dtoIn.password().isBlank()
+                ||dtoIn.email() == null || dtoIn.email().isBlank()
+                ||dtoIn.firstname() == null  || dtoIn.firstname().isBlank()
+                ||dtoIn.lastname() == null || dtoIn.lastname().isBlank()
+                ||dtoIn.street()==null || dtoIn.street().isBlank()
+                ||dtoIn.streetNr()==null || dtoIn.streetNr().isBlank()
+                ||dtoIn.zip()== null || dtoIn.zip().isBlank()
+                ||dtoIn.city() == null || dtoIn.city().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "All fields required");
+        }
+
+
         String token = securityManager.createBenutzerToken(user);
         UserDtoOut out = new UserDtoOut(user.getId(), user.getFirstname(), user.getLastname());
         return ResponseEntity.ok().header("Authorization", token).body(out);

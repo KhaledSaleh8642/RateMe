@@ -5,10 +5,12 @@ import de.hs_kl.rateme.entity.Poi;
 import de.hs_kl.rateme.entity.Rating;
 import de.hs_kl.rateme.entity.User;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 
 import java.util.Collection;
@@ -26,31 +28,35 @@ public class DBAccess {
             , String firstname,String lastname
     ,String street,String street_nr,String zip, String city){
     User user = new User();
-    if(findUserByUsername(username) != null){
-    throw new IllegalArgumentException(HttpStatus.FORBIDDEN + "User already exists");
+
+    try {
+        findUserByUsername(username);
+        throw new ResponseStatusException(HttpStatus.CONFLICT , "User already exists");
+    }catch (NoResultException ignored) {
+
     }
-
-
-    byte[] salt = PasswordTools.generateSalt();
-    byte[] hash = PasswordTools.generatePasswordHash(password,salt);
-    user.setPasswordSalt(salt);
-    user.setPasswordHash(hash);
-    user.setFirstname(firstname);
-    user.setLastname(lastname);
-    user.setEmail(email);
-    user.setStreet(street);
-    user.setStreetNr(street_nr);
-    user.setZip(zip);
-    user.setCity(city);
-    entityManager.persist(user);
-    entityManager.flush();
-    entityManager.refresh(user);
-    return user;
+        byte[] salt = PasswordTools.generateSalt();
+        byte[] hash = PasswordTools.generatePasswordHash(password, salt);
+        user.setUsername(username);
+        user.setPasswordSalt(salt);
+        user.setPasswordHash(hash);
+        user.setFirstname(firstname);
+        user.setLastname(lastname);
+        user.setEmail(email);
+        user.setStreet(street);
+        user.setStreetNr(street_nr);
+        user.setZip(zip);
+        user.setCity(city);
+        entityManager.persist(user);
+        entityManager.flush();
+        entityManager.refresh(user);
+        return user;
     }
     public User findUserById(int id){
      return entityManager.find(User.class,id);
     }
- public User findUserByUsername(String username){
+
+    public User findUserByUsername(String username){
     return entityManager
             .createNamedQuery("findUserByUsername",User.class)
             .setParameter("username", username)

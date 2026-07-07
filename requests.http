@@ -10,13 +10,25 @@ POST http://localhost:8080/api/users/register
 Content-Type: application/json
 
 {
-  "username": "khaled",
-  "password": "123112s",
+  "username": "test",
+  "password": "1234",
   "email": "m@hs-kl.de",
-  "firstname": "Khaled",
-  "lastname": "Saleh",
+  "firstname": "Moha",
+  "lastname": "Aloha",
   "street": "Hauptstraße",
   "streetNr": "1",
   "zip": "66482",
   "city": "Zweibrücken"
+}
+
+###
+POST http://localhost:8080/api/ratings
+Authorization: 688f7eb0-2ec6-4014-9222-ae8f1a2eb9d0
+Content-Type: application/json
+
+{
+  "poiId": 933057175,
+  "grade": 4,
+  "txt": "Great food!",
+  "imageId": null
 }

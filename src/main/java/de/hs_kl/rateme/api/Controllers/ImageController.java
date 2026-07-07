@@ -39,8 +39,7 @@ public class ImageController {
     }
 
     @GetMapping("{id}")
-    public ResponseEntity<byte[]> getImg(@PathVariable int id,@RequestHeader ("Authorization") String token){
-        securityManager.checkIfTokenIsAccepted(token);
+    public ResponseEntity<byte[]> getImg(@PathVariable int id){
         Image image = dbAccess.findImgById(id);
 
         if(image == null){
