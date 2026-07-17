@@ -16,7 +16,7 @@ public class Poi {
     private long id;
     @Enumerated(EnumType.STRING)
     @Column(name = "type",nullable = false)
-    private poiType type;
+    private PoiType type;
 
 private Double lat;
 private Double lon;
@@ -65,11 +65,11 @@ private String tags;
         this.id = id;
     }
 
-    public poiType getType() {
+    public PoiType getType() {
         return type;
     }
 
-    public void setType(poiType type) {
+    public void setType(PoiType type) {
         this.type = type;
     }
 

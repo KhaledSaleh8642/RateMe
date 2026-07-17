@@ -1,39 +1,45 @@
 <!DOCTYPE html>
-<html lang="en" xmlns="http://www.w3.org/1999/html">
+<html lang="de">
 <head>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RateMe</title>
+
     <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <link rel="stylesheet" href="css/style.css">
-    <script src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
-<div id="image-modal" onclick="this.style.display='none'">
-    <img id="image-modal-content" src="">
-</div>
 <body>
+
+<div id="image-modal" class="hidden">
+    <img id="image-modal-content" src="" alt="Full size rating image">
+</div>
+
 <div id="landing" class="landing">
     <h1>HS-KL Location-Bewertung</h1>
     <div class="landing-card">
         <h2>Willkommen</h2>
-        <input type="text" id="login-username-inline" placeholder="Username" class="w3-input">
-        <input type="password" id="login-password-inline" placeholder="Password" class="w3-input">
-        <button id="login-button-inline" class="w3-button">Login</button>
+        <button type="button" id="open-login-button" class="w3-button">Login</button>
         <p class="hint">Noch keinen Account?</p>
-        <button id="register-button" class="w3-button register-btn">Registrieren</button>
+        <button type="button" id="register-button" class="w3-button register-btn">Registrieren</button>
     </div>
 </div>
 
-    <div id="welcome-bar" style="display: none;">
+    <div id="welcome-bar" class="hidden">
         Herzlich Willkommen <span id="welcome-name"></span>
-        <button id="logout-button">Logout</button>
+        <button type="button" id="logout-button">Logout</button>
+        <button type="button" id="delete-account-button">Account löschen</button>
     </div>
 
 
-    <button id="show-my-ratings" style="display: none;">Meine Bewertungen</button>
-    <button id="show-map" style="display: none;">Location Bewerten</button>
+    <div id="tab-bar" class="w3-bar w3-black hidden">
+        <button type="button" id="show-map" class="w3-bar-item w3-button">Location Bewerten</button>
+        <button type="button" id="show-my-ratings" class="w3-bar-item w3-button">Meine Bewertungen</button>
+    </div>
 
-    <div id="my-ratings" style="display: none;">
+    <div id="my-ratings" class="hidden">
         <h2>Meine Bewertungen</h2>
         <table>
             <thead>
@@ -43,6 +49,7 @@
                 <th>Kommentar</th>
                 <th>Bewertung</th>
                 <th>Bild</th>
+                <th class="rating-action-header">Aktion</th>
             </tr>
             </thead>
             <tbody id="my-ratings-body"></tbody>
@@ -51,10 +58,10 @@
     <div id="main-content">
         <div id="map"></div>
 
-        <div id="poi-details" style="display: none;">
+        <div id="poi-details" class="hidden">
         <h2 id="poi-name"></h2>
-        <p>Telefon: <span id="poi-phone"></span></p>
-        <p>Locationart: <span id="poi-amenity"></span></p>
+            <p id="poi-phone-row">Telefon: <span id="poi-phone"></span></p>
+            <p id="poi-amenity-row">Locationart: <span id="poi-amenity"></span></p>
 
         <table id="ratings-table">
             <thead>
@@ -80,18 +87,30 @@
                 <span data-value="4">☆</span>
                 <span data-value="5">☆</span>
             </div>
+
             <input type="hidden" id="rating-grade" value="0">
 
         <br>
         <button id="submit-rating">Absenden</button> <input type="file" id="rating-image" accept="image/*">
     </div>
     </div>
-
-    <div id="register-form" class="w3-modal">
-        <div class="w3-modal-content w3-card-4" style="max-width: 500px;">
+    <div id="login-form" class="w3-modal">
+        <div class="w3-modal-content w3-card-4 modal-small">
             <div class="w3-container">
-            <span onclick="document.getElementById('register-form').style.display='none'"
-                  class="w3-button w3-display-topright">×</span>
+                <span id="close-login" class="w3-button w3-display-topright">×</span>
+                <h2>Login</h2>
+
+                <input type="text" id="login-username" placeholder="Username" class="w3-input">
+                <input type="password" id="login-password" placeholder="Password" class="w3-input">
+
+                <button id="submit-login" class="w3-button w3-blue">Login</button>
+            </div>
+        </div>
+    </div>
+    <div id="register-form" class="w3-modal">
+        <div class="w3-modal-content w3-card-4 modal-small">
+            <div class="w3-container">
+                <span id="close-register" class="w3-button w3-display-topright">×</span>
                 <h2>Register</h2>
                 <input type="text" id="reg-username" placeholder="Username" class="w3-input">
                 <input type="password" id="reg-password" placeholder="Password" class="w3-input">
@@ -102,11 +121,21 @@
                 <input type="text" id="reg-streetnr" placeholder="Hausnummer" class="w3-input">
                 <input type="text" id="reg-zip" placeholder="PLZ" class="w3-input">
                 <input type="text" id="reg-city" placeholder="Ort" class="w3-input">
-                <button id="submit-register" class="w3-button w3-blue">Register</button>
+                <button id="submit-register" class="w3-button w3-blue">Registrieren</button>
             </div>
         </div>
     </div>
 
+    <template id="rating-row-template">
+        <tr>
+        <td class="rating-date"></td>
+        <td class="rating-person-or-location"></td>
+        <td class="rating-comment"></td>
+        <td class="rating-grade"></td>
+        <td class="rating-image"></td>
+        <td class="rating-action"></td>
+        </tr>
+    </template>
     <script src="js/app.js"></script>
 </body>
 </html>

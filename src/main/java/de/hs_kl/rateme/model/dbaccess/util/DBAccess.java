@@ -85,12 +85,14 @@ public class DBAccess {
     //============Rating============
     public Rating createRating(int userId , long poiId, int grade, String txt, Integer image_id){
         Rating rating = new Rating();
-
         if (grade < 0 || grade > 5) {
             throw new IllegalArgumentException("Grade must be between 0 and 5");
         }
         User user = findUserById(userId);
         Poi poi = getPoiById(poiId);
+        if (user == null || poi == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid user or POI");
+        }
         Image image = (image_id != null) ? findImgById(image_id) : null;
 
         rating.setUser(user);
@@ -106,14 +108,46 @@ public class DBAccess {
         return rating;
 
     }
+
     public Collection<Rating> findRatingsByPoiId(long poiId){
         return entityManager
                 .createNamedQuery("findRatingsByPoiId",Rating.class)
                 .setParameter("poiId",poiId).getResultList();
     }
+
     public Collection<Rating> findRatingByUserId(int userId){
         return entityManager
                 .createNamedQuery("findRatingByUserId",Rating.class)
                 .setParameter("userId",userId).getResultList();
+    }
+
+    public void deleteRating(int ratingId, int userId) {
+        Rating rating = entityManager.find(Rating.class, ratingId);
+
+        if (rating == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Rating not found");
+        }
+
+        if (rating.getUser() == null || rating.getUser().getId() != userId) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Sie können nur ihre Bewertungen löschen");
+        }
+
+        entityManager.remove(rating);
+        entityManager.flush();
+    }
+
+    public void deleteUserAndRatings(int userId) {
+        User user = findUserById(userId);
+
+        if(user == null){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+        }
+        Collection<Rating> ratings = findRatingByUserId(userId);
+
+        for (Rating rating : ratings){
+            entityManager.remove(rating);
+        }
+        entityManager.remove(user);
+        entityManager.flush();
     }
 }
