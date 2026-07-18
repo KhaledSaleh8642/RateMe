@@ -1,88 +1,217 @@
 # RateMe
 
-A REST-based backend for a location rating platform. Users can register, log in, browse points of interest (POIs), submit ratings, and retrieve ratings associated with their account or a specific location.
+RateMe ist eine Webanwendung zur Bewertung von Restaurants, Cafés, Bars und weiteren Points of Interest (POIs) in Zweibrücken.
 
-The project was developed as a university software project at Hochschule Kaiserslautern. This repository focuses on the Spring Boot backend and database environment.
+Benutzer können sich registrieren und anmelden, Orte auf einer interaktiven Karte anzeigen, Bilder hochladen, Bewertungen erstellen und ihre eigenen Bewertungen oder ihr Benutzerkonto löschen.
 
-## Features
+Das Projekt wurde im Rahmen eines Hochschulprojekts an der Hochschule Kaiserslautern entwickelt.
 
-- User registration, login, and logout
-- Salted password hashing
-- UUID-based access tokens
-- Protected REST endpoints using the `Authorization` header
-- Retrieval of all POIs or an individual POI
-- Creation of ratings with a grade from 0 to 5
-- Retrieval of the authenticated user's ratings
-- Retrieval of all ratings for a selected POI
-- DTO-based JSON request and response models
-- MySQL database initialized through Docker scripts
+## Funktionen
 
-## Tech Stack
+- Registrierung, Anmeldung und Abmeldung von Benutzern
+- Passwort-Hashing mit Salt
+- Authentifizierung mithilfe von UUID-Tokens
+- Geschützte Endpunkte über den `Authorization`-Header
+- Interaktive Karte mit Leaflet
+- Anzeige von Points of Interest (POIs)
+- Erstellung und Löschung von Bewertungen
+- Anzeige der eigenen Bewertungen
+- Anzeige aller Bewertungen eines ausgewählten POIs
+- Hochladen und Abrufen von Bildern
+- Löschung des eigenen Benutzerkontos
+- API-Dokumentation mit OpenAPI und Swagger
+- AOP-basiertes Logging
+- Automatische Initialisierung der MySQL-Datenbank
+- Docker-Compose-Umgebung für Datenbank und Anwendung
+
+## Verwendete Technologien
 
 - Java 21
 - Spring Boot 4
 - Spring Web MVC
-- Spring Data JPA
+- Jakarta Persistence (JPA)
 - Jakarta Validation
 - MySQL 8
 - Maven
-- Docker
-- JSON / REST
+- Docker und Docker Compose
+- OpenAPI und Swagger
+- HTML, CSS und JavaScript
+- Leaflet
+- REST und JSON
 
-## Architecture
-
-The application separates API, persistence, domain, and authentication responsibilities:
+## Projektstruktur
 
 ```text
-src/main/java/de/hs_kl/rateme
-├── api
-│   ├── Controllers
-│   └── DTOs
-├── entity
-├── model/dbaccess/util
-├── security
-└── RatemeApplication.java
+RateMe
+├── appServer
+│   └── Dockerfile
+├── db
+│   ├── conf
+│   ├── initdb
+│   └── Dockerfile
+├── logs
+├── src
+│   ├── main
+│   │   ├── java/de/hs_kl/rateme
+│   │   │   ├── api
+│   │   │   │   ├── controllers
+│   │   │   │   └── dtos
+│   │   │   ├── aspect
+│   │   │   ├── config
+│   │   │   ├── entity
+│   │   │   ├── model/dbaccess/util
+│   │   │   ├── security
+│   │   │   └── RatemeApplication.java
+│   │   └── resources
+│   │       ├── static
+│   │       └── application.properties
+│   └── test
+├── docker-compose.yml
+└── pom.xml
 ```
 
-### Main Components
+## Authentifizierung
 
-- **Controllers** expose the REST API.
-- **DTOs** define the external JSON contract.
-- **Entities** represent users, POIs, ratings, and images.
-- **DBAccess** contains the database operations.
-- **SecurityManager** creates and validates UUID access tokens.
-- **PasswordTools** handles password hashing and verification.
+Nach einer erfolgreichen Registrierung oder Anmeldung gibt der Server ein UUID-Token im `Authorization`-Header der Antwort zurück.
 
-## Authentication Flow
+Bei Aufrufen geschützter Endpunkte muss dieses Token im `Authorization`-Header der Anfrage übermittelt werden.
 
-1. A user registers or logs in.
-2. The API returns a UUID token in the `Authorization` response header.
-3. The client sends this token in the `Authorization` request header when calling protected endpoints.
+Die Tokens werden mithilfe einer `ConcurrentHashMap` im Arbeitsspeicher gespeichert. Daher werden alle Tokens ungültig, sobald die Anwendung neu gestartet wird. Dieses Authentifizierungsverfahren wurde für das Hochschulprojekt entwickelt und ist nicht für den produktiven Einsatz vorgesehen.
 
-> The token store is held in memory using a `ConcurrentHashMap`. Tokens are therefore removed when the application restarts. This implementation was created for the academic project and is not intended as production authentication.
+## Übersicht der API-Endpunkte
 
-## API Overview
+| Methode | Endpunkt | Authentifizierung | Beschreibung |
+|---|---|---:|---|
+| `POST` | `/api/users/register` | Nein | Neuen Benutzer registrieren |
+| `POST` | `/api/users/login` | Nein | Benutzer anmelden |
+| `POST` | `/api/users/logout` | Ja | Benutzer abmelden und Token ungültig machen |
+| `DELETE` | `/api/users/me` | Ja | Eigenes Benutzerkonto löschen |
+| `GET` | `/api/pois` | Ja | Alle POIs abrufen |
+| `GET` | `/api/pois/{id}` | Ja | Einen bestimmten POI abrufen |
+| `POST` | `/api/ratings` | Ja | Eine Bewertung erstellen |
+| `GET` | `/api/ratings/me` | Ja | Eigene Bewertungen abrufen |
+| `GET` | `/api/ratings/poi/{poiId}` | Ja | Bewertungen eines POIs abrufen |
+| `DELETE` | `/api/ratings/{ratingId}` | Ja | Eine eigene Bewertung löschen |
+| `POST` | `/api/images` | Ja | Ein Bild hochladen |
+| `GET` | `/api/images/{id}` | Nein | Ein Bild abrufen |
 
-Base URL:
+## Anwendung starten
+
+### Voraussetzungen
+
+Folgende Software muss installiert sein:
+
+- Java 21
+- Docker Desktop
+- Git
+
+### 1. Repository klonen
+
+```bash
+git clone https://github.com/KhaledSaleh8642/RateMe.git
+cd RateMe
+```
+
+### 2. Anwendung kompilieren
+
+Unter Windows:
+
+```powershell
+.\mvnw.cmd clean package -DskipTests
+```
+
+Unter Linux oder macOS:
+
+```bash
+./mvnw clean package -DskipTests
+```
+
+Dadurch wird die JAR-Datei erzeugt, die von `appServer/Dockerfile` benötigt wird.
+
+### 3. Anwendung mit Docker Compose starten
+
+Docker Desktop muss gestartet sein. Im Hauptverzeichnis des Projekts wird anschließend folgender Befehl ausgeführt:
+
+```bash
+docker compose up --build
+```
+
+Um die Container im Hintergrund zu starten:
+
+```bash
+docker compose up --build -d
+```
+
+Docker Compose startet zwei Container:
+
+- `rateme_db`: MySQL-Datenbank auf Port `3306`
+- `rateme_appserver`: Spring-Boot-Anwendung auf Port `8080`
+
+Die Datenbank wird automatisch mithilfe der SQL-Dateien im Verzeichnis `db/initdb` initialisiert.
+
+### 4. Anwendung öffnen
+
+Webanwendung:
 
 ```text
 http://localhost:8080
 ```
 
-| Method | Endpoint | Authentication | Description |
-|---|---|---:|---|
-| `POST` | `/api/users/register` | No | Register a user and receive an access token |
-| `POST` | `/api/users/login` | No | Log in and receive an access token |
-| `POST` | `/api/users/logout` | Yes | Invalidate the current access token |
-| `GET` | `/api/pois` | Yes | Retrieve all POIs |
-| `GET` | `/api/pois/{id}` | Yes | Retrieve one POI |
-| `POST` | `/api/ratings` | Yes | Create a rating |
-| `GET` | `/api/ratings/me` | Yes | Retrieve the authenticated user's ratings |
-| `GET` | `/api/ratings/poi/{poiId}` | Yes | Retrieve ratings for one POI |
+Swagger UI:
 
-## Example Requests
+```text
+http://localhost:8080/swagger-ui/index.html
+```
 
-### Register a user
+OpenAPI-Spezifikation:
+
+```text
+http://localhost:8080/v3/api-docs
+```
+
+### 5. Anwendung beenden
+
+Container stoppen, ohne sie zu entfernen:
+
+```bash
+docker compose stop
+```
+
+Container stoppen und entfernen:
+
+```bash
+docker compose down
+```
+
+## Anwendung lokal ohne App-Container starten
+
+Die Datenbank kann separat über Docker Compose gestartet werden:
+
+```bash
+docker compose up -d dbserver
+```
+
+Anschließend kann die Spring-Boot-Anwendung lokal gestartet werden.
+
+Unter Windows:
+
+```powershell
+.\mvnw.cmd spring-boot:run
+```
+
+Unter Linux oder macOS:
+
+```bash
+./mvnw spring-boot:run
+```
+
+Die lokale Anwendung verwendet die Datenbankkonfiguration aus:
+
+```text
+src/main/resources/application.properties
+```
+
+## Beispiel: Benutzer registrieren
 
 ```http
 POST /api/users/register
@@ -94,27 +223,16 @@ Content-Type: application/json
   "email": "khaled@example.com",
   "firstname": "Khaled",
   "lastname": "Saleh",
-  "street": "Example Street",
+  "street": "Musterstraße",
   "streetNr": "10",
   "zip": "66482",
   "city": "Zweibrücken"
 }
 ```
 
-The access token is returned in the response header:
+Das UUID-Zugriffstoken wird im `Authorization`-Header der Antwort zurückgegeben.
 
-```text
-Authorization: <uuid-token>
-```
-
-### Retrieve all POIs
-
-```http
-GET /api/pois
-Authorization: <uuid-token>
-```
-
-### Create a rating
+## Beispiel: Bewertung erstellen
 
 ```http
 POST /api/ratings
@@ -124,115 +242,63 @@ Content-Type: application/json
 {
   "poiId": 933057175,
   "grade": 4,
-  "txt": "Great food and friendly service.",
+  "txt": "Gutes Essen und freundlicher Service.",
   "imageId": null
 }
 ```
 
-Additional request examples are available in [`requests.http`](requests.http).
+Die Bewertung muss zwischen `0` und `5` liegen. Der Bewertungstext darf nicht leer sein.
 
-## Local Setup
+## Logging
 
-### Prerequisites
+Die Aktivitäten der Anwendung werden mithilfe eines Spring-AOP-Aspekts protokolliert.
 
-- Java 21
-- Docker
-- Git
-
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/KhaledSaleh8642/RateMe.git
-cd RateMe
-```
-
-### 2. Build the MySQL image
-
-Run the following commands from the `db` directory:
-
-```bash
-cd db
-docker build -f Dockerfile -t swtp_rateme_image .
-```
-
-The image initializes the `swtp_rateme` database using the SQL scripts under `db/initdb`.
-
-### 3. Start the database container
-
-```bash
-docker run --name swtpRateme -d -p 3306:3306 swtp_rateme_image
-```
-
-For later runs:
-
-```bash
-docker start swtpRateme
-docker stop swtpRateme
-```
-
-### 4. Run the Spring Boot application
-
-Return to the repository root:
-
-```bash
-cd ..
-./mvnw spring-boot:run
-```
-
-On Windows:
-
-```powershell
-.\mvnw.cmd spring-boot:run
-```
-
-The API starts at:
+Beim Start über Docker Compose wird die Logdatei in folgendem Pfad gespeichert:
 
 ```text
-http://localhost:8080
+logs/rateme.log
 ```
 
-## Database Configuration
+Die generierte Logdatei wird durch `.gitignore` von Git ausgeschlossen.
 
-The default application configuration expects:
+## Tests
 
-```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/swtp_rateme
-spring.datasource.username=root
-spring.datasource.password=
+Vor der Ausführung der Tests muss die Datenbank gestartet werden:
+
+```bash
+docker compose up -d dbserver
 ```
 
-The provided Docker image allows an empty local MySQL root password for development. Do not use this configuration in production.
+Unter Windows:
 
-## Testing
+```powershell
+.\mvnw.cmd test
+```
 
-Run the Maven test suite:
+Unter Linux oder macOS:
 
 ```bash
 ./mvnw test
 ```
 
-You can also execute the sample API requests in [`requests.http`](requests.http) with an HTTP client supported by IntelliJ IDEA, VS Code, or another compatible editor.
+## Projektinhalte
 
-## Frontend Integration
+Das Projekt demonstriert insbesondere:
 
-The REST API returns JSON and was designed to be consumed by a browser-based client. A separate project version used JavaScript, HTML, CSS, and Leaflet to display POIs on an interactive map and communicate with the backend through `fetch`.
+- Entwicklung einer REST-API mit Spring Boot
+- Datenaustausch über DTOs
+- Manuelle Datenbankoperationen mit dem `EntityManager`
+- Modellierung relationaler Daten
+- Passwort-Hashing und selbst entwickelte Token-Authentifizierung
+- Speicherung und Bereitstellung von Bildern
+- Eingabevalidierung und Fehlerbehandlung
+- AOP-basiertes Logging
+- API-Dokumentation mit OpenAPI
+- Bereitstellung mit Docker
+- Integration von Frontend und Backend
 
-The JavaScript frontend is not included in the current public repository.
-
-## Project Context
-
-This project demonstrates:
-
-- Java and Spring Boot backend development
-- REST API design
-- DTO-based data exchange
-- Relational database access with JPA
-- Password hashing and custom token authentication
-- Docker-based database initialization
-- Client-server integration using JSON
-
-## Author
+## Autor
 
 **Khaled Saleh**
 
-- GitHub: [KhaledSaleh8642](https://github.com/KhaledSaleh8642)
+[GitHub-Profil](https://github.com/KhaledSaleh8642)
