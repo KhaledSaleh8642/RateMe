@@ -351,11 +351,23 @@ td:nth-child(4) {
 
 .rating-action button {
     display: inline-block;
-    background: #a33d2b;
+    margin: 0 3px;
 }
 
-.rating-action button:hover {
-    background: #842f22;
+.rating-edit-button {
+    background: #1976d2;
+}
+
+.rating-edit-button:hover {
+    background: #125aa0;
+}
+
+.rating-delete-button {
+    background: #d32f2f;
+}
+
+.rating-delete-button:hover {
+    background: #a52121;
 }
 
 .rating-action-cell button {

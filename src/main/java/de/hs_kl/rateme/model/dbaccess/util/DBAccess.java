@@ -135,6 +135,22 @@ public class DBAccess {
         entityManager.remove(rating);
         entityManager.flush();
     }
+    public void editUserRating(int ratingId, int userId, String txt, int grade){
+        Rating rating = entityManager.find(Rating.class, ratingId);
+        if (rating == null){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Rating not found, could be deleted");
+            }
+            if(rating.getUser() == null || rating.getUser().getId() != userId){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only edit your rating");
+        }
+        if (grade < 1 || grade > 5) {
+            throw new IllegalArgumentException("Grade must be between 1 and 5");
+        }
+
+        rating.setGrade(grade);
+        rating.setTxt(txt);
+        entityManager.flush();
+    }
 
     public void deleteUserAndRatings(int userId) {
         User user = findUserById(userId);

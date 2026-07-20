@@ -270,7 +270,29 @@ function submitRating(token, grade, txt, imageId) {
             alert("Bewertung konnte nicht gespeichert werden.");
         });
 }
-
+function editMyRating(rating, txt, grade) {
+    const token = localStorage.getItem("token");
+    fetch("api/ratings/" + rating.id, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": token
+        },
+        body: JSON.stringify({
+            txt: txt,
+            grade: grade
+        })
+    }).then(function (response) {
+        if (!response.ok) {
+            throw new Error("Rating could not be saved. Status: " + response.status);
+        }
+        console.log("Rating saved ");
+        loadMyRatings();
+    }).catch(function (error){
+        console.error(error.message)
+        alert("Bewertung konnte nicht gespeichert werden.");
+    });
+}
 function loadMyRatings() {
     const token = localStorage.getItem("token");
 
@@ -341,7 +363,8 @@ function renderStars(grade) {
     }
     return stars;
 }
-function createRatingRow(rating, secondColumnText, showDeleteButton) {
+
+function createRatingRow(rating, secondColumnText, showActionButtons) {
     const template = document.getElementById("rating-row-template");
     const row = template.content.firstElementChild.cloneNode(true);
 
@@ -367,12 +390,37 @@ function createRatingRow(rating, secondColumnText, showDeleteButton) {
     }
 
     const actionCell = row.querySelector(".rating-action");
-
-    if (showDeleteButton) {
+    if (showActionButtons) {
+        const editButton = document.createElement("button");
         const deleteButton = document.createElement("button");
         deleteButton.type = "button";
+        editButton.type = "button";
         deleteButton.textContent = "Löschen";
-        deleteButton.classList.add("w3-button", "w3-red");
+        editButton.textContent = "Bearbeiten";
+        deleteButton.classList.add("rating-delete-button");
+        editButton.classList.add("rating-edit-button");
+        editButton.addEventListener("click", function (){
+            const newTxt = prompt("Kommentar bearbeiten:", rating.txt);
+            if(newTxt === null){
+                return;
+            }
+            if(newTxt.trim() === ""){
+                alert("Bitte geben Sie ein Kommentar !");
+                return;
+            }
+            const newGrade = prompt("Grade bearbeiten:", rating.grade);
+            if(newGrade < 1 || newGrade > 5){
+                alert("Only between 1-5 allowed !");
+                return;
+            }
+            if (newGrade === null){
+                return;
+            }
+            editMyRating(rating,newTxt,newGrade);
+            console.log("Old comment: ", rating.txt);
+            console.log("new text: ", newTxt);
+        });
+        actionCell.appendChild(editButton);
 
         deleteButton.addEventListener("click", function () {
             if (confirm("Möchten Sie diese Bewertung wirklich löschen?")) {

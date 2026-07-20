@@ -1,5 +1,6 @@
 package de.hs_kl.rateme.api.controllers;
 
+import de.hs_kl.rateme.api.dtos.EditRatingDtoIn;
 import de.hs_kl.rateme.api.dtos.RatingDtoIn;
 import de.hs_kl.rateme.api.dtos.RatingDtoOut;
 import de.hs_kl.rateme.entity.Rating;
@@ -95,6 +96,21 @@ public class RatingController {
         User user = securityManager.getUser(token);
         dbAccess.deleteRating(ratingId, user.getId());
 
+        return ResponseEntity.noContent().build();
+    }
+    @PutMapping("/{ratingId}")
+    public ResponseEntity<Void> editRating(@RequestBody EditRatingDtoIn editRatingDtoIn,
+                                                   @RequestHeader("Authorization") String token,
+                                                   @PathVariable int ratingId){
+        securityManager.checkIfTokenIsAccepted(token);
+        if (editRatingDtoIn.txt() == null || editRatingDtoIn.txt().isBlank()){
+            return ResponseEntity.badRequest().build();
+        }
+        if(editRatingDtoIn.grade() < 1 || editRatingDtoIn.grade() > 5){
+            return ResponseEntity.badRequest().build();
+        }
+        User user = securityManager.getUser(token);
+        dbAccess.editUserRating(ratingId, user.getId(), editRatingDtoIn.txt(), editRatingDtoIn.grade());
         return ResponseEntity.noContent().build();
     }
 
